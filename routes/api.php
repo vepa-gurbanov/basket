@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:api')
+    ->prefix('v1')
+    ->group(function () {
+//        Route::controller(CategoryController::class)
+//            ->prefix('categories')
+//            ->group(function () {
+//                Route::get('', 'index');
+//            });
+//
+//        Route::controller(BrandController::class)
+//            ->prefix('brands')
+//            ->group(function () {
+//                Route::get('', 'index');
+//                Route::post('', 'store');
+//                Route::put('/{id}', 'update')->where('id', '[0-9]+');
+//                Route::delete('/{id}', 'delete')->where('id', '[0-9]+');
+//            });
+
+        Route::controller(AuthController::class)
+            ->prefix('auth')
+            ->group(function () {
+                Route::post('login', 'login');
+                Route::post('self', 'self');
+                Route::post('refresh', 'refresh');
+                Route::post('logout', 'logout');
+
+                Route::post('forgot-password', 'forgotPassword');
+                Route::post('change-password', 'changePassword');
+            });
+    });

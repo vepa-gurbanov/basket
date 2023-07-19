@@ -53,17 +53,19 @@ Route::prefix('admin')
 
             Route::put('/password', [PasswordController::class, 'update'])->name('.password.update');
 
+            Route::controller(ProfileController::class)->group(function () {
+                Route::get('/profile', 'edit')->name('.profile.edit');
+                Route::patch('/profile', 'update')->name('.profile.update');
+                Route::delete('/profile', 'destroy')->name('.profile.destroy');
+            });
+
+
+            Route::post('/logout', [LoginController::class, 'destroy'])
+                ->name('.logout');
+
 
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('.dashboard');
+
+
         });
-
-        Route::controller(ProfileController::class)->group(function () {
-            Route::get('/profile', 'edit')->name('.profile.edit');
-            Route::patch('/profile', 'update')->name('.profile.update');
-            Route::delete('/profile', 'destroy')->name('.profile.destroy');
-        });
-
-
-        Route::post('/logout', [LoginController::class, 'destroy'])
-            ->name('.logout');
     });

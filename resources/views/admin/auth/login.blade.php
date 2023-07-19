@@ -1,6 +1,6 @@
 @extends('admin.auth.app')
 @section('title')
-    __{{ 'Login' }}
+    {{ __('Login') }}
 @endsection
 @section('content')
     <form method="POST" action="{{ route('admin.login') }}" class="needs-validation" novalidate>
