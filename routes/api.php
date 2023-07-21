@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ResetPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,4 +45,6 @@ Route::middleware('auth:api')
                 Route::post('forgot-password', 'forgotPassword');
                 Route::post('change-password', 'changePassword');
             });
+
     });
+Route::post('v1/auth/reset-password', [ResetPasswordController::class, 'sendResetPasswordNotification']);

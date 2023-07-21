@@ -1,6 +1,6 @@
 @extends('admin.auth.app')
 @section('title')
-__{{ 'Forgot password' }}
+{{ __('Forgot password') }}
 @endsection
 @section('content')
 
