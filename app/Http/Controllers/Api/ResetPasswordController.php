@@ -27,18 +27,46 @@ class ResetPasswordController extends Controller
         try {
             $user = User::where('email', $validation['email'])->first();
         } catch (UserNotDefinedException $e) {
-            return $this->failedResponse($e->getMessage(), 403);
+            return $this->failedResponse($e->getMessage(), 404);
         }
 
         try {
             $mailableVariables = $this->createToken($validation['email']);
+            session()->put('api_auth', $mailableVariables);
 //            $user->sendPasswordResetCodeNotification($mailableVariables['token'], $mailableVariables['code']);
-            return $this->successResponse();
+            return $this->successResponse('Verification code sent!', 200);
         } catch (\Exception $e) {
-            return $this->failedResponse($e->getMessage(), 403);
+            return $this->failedResponse($e->getMessage(), 404);
         }
     }
 
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validation = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'code' => ['required', 'string', 'digits:5']
+        ]);
+
+        try {
+            $requestIsValid = DB::table('password_reset_tokens')
+                ->where(['email' => $validation['email'], 'code' => $validation['code']])
+                ->first();
+
+            return $this->successResponse('Verification correct!', 200);
+        } catch (\Exception $e) {
+            return $this->failedResponse($e->getMessage(), 404);
+        }
+    }
+
+
+    public function changePassword(Request $request) {
+        $validation = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'code' => ['required', 'string', 'digits:5']
+        ]);
+
+    }
 
     // Short variables
     public function createToken($email): array
@@ -72,11 +100,11 @@ class ResetPasswordController extends Controller
     }
 
 
-    public function successResponse(): JsonResponse
+    public function successResponse($message, $code): JsonResponse
     {
         return response()->json([
             'status' => 'success',
-            'message' => 'Verification code sent!',
-        ], 200);
+            'message' => $message,
+        ], $code);
     }
 }
