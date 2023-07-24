@@ -74,3 +74,11 @@ body {
 .bd-mode-toggle {
     z-index: 1500;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.modal-span:focus {
+
+}

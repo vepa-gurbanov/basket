@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ResetPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')
+Route::middleware('api')
     ->prefix('v1')
     ->group(function () {
 //        Route::controller(CategoryController::class)
@@ -41,10 +42,14 @@ Route::middleware('auth:api')
                 Route::post('self', 'self');
                 Route::post('refresh', 'refresh');
                 Route::post('logout', 'logout');
-
-                Route::post('forgot-password', 'forgotPassword');
-                Route::post('change-password', 'changePassword');
             });
 
+        Route::get('dashboard', [DashboardController::class, 'index']);
     });
-Route::post('v1/auth/reset-password', [ResetPasswordController::class, 'sendResetPasswordNotification']);
+Route::prefix('v1/auth')
+    ->controller(ResetPasswordController::class)
+    ->group(function () {
+        Route::post('forgot-password', 'sendResetPasswordNotification');
+        Route::post('reset-password/{token}', 'resetPassword');
+        Route::post('change-password', 'changePassword');
+    });

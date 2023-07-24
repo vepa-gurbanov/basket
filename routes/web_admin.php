@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Auth\PasswordController;
 use App\Http\Controllers\Admin\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,5 +68,12 @@ Route::prefix('admin')
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('.dashboard');
 
 
+            Route::controller(UserController::class)->group(function () {
+                Route::get('users', 'index')->name('.users');
+                Route::put('users', 'updateRole')->name('.users.role.update')->middleware('can:admin');
+                Route::patch('users', 'update')->name('.users.update')->middleware('can:admin');
+                Route::delete('users', 'destroy')->name('.users.destroy')->middleware('can:admin');
+                Route::post('users', 'store')->name('.users.store')->middleware('can:admin');
+            });
         });
     });

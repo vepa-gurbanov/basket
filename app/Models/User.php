@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\Admin\UserCreatedNotification;
 use App\Notifications\Api\ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -70,4 +71,20 @@ class User extends Authenticatable implements JWTSubject
         $this->notify(new ResetPassword($token, $code));
     }
 
+
+//    public function sendUserCreatedNotification($user)
+//    {
+//        $this->notify(new UserCreatedNotification($user));
+//    }
+
+
+    public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+
+    public function sendUserCreatedNotification($email, $password) {
+        $this->notify(new UserCreatedNotification($email, $password));
+    }
 }

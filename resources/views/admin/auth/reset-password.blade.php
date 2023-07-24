@@ -1,6 +1,6 @@
 @extends('admin.auth.app')
 @section('title')
-    __{{ 'Reset password' }}
+    {{ __('Reset password') }}
 @endsection
 @section('content')
     <form method="POST" action="{{ route('admin.password.store') }}" class="needs-validation" novalidate>
