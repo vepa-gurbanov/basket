@@ -23,6 +23,8 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'last_seen',
+        'disabled',
     ];
 
     /**
@@ -41,9 +43,14 @@ class User extends Authenticatable implements JWTSubject
      * @var array<string, string>
      */
     protected $casts = [
+        'last_seen' => 'datetime',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public static function findOrFail($id)
+    {
+    }
 
 
     /**

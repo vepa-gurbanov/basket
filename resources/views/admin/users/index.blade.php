@@ -16,12 +16,14 @@
                 </h6>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-primary bi-plus-lg"
-                        data-bs-toggle="modal" data-bs-target="#UserCreateModal"></button>
+                <button type="button" class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#UserCreateModal">
+                    <i class="fas fa-user-plus fa-sm text-white-50"></i>
+                </button>
 
                 <div class="modal fade" id="UserCreateModal" tabindex="-1" role="dialog" aria-labelledby="UserCreateModalLabel"
                      aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-scrollable" role="document">
+                    <div class="modal-dialog modal-dialog-scrollable h-auto" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="UserCreateModalLabel">
@@ -112,13 +114,8 @@
                         </th>
                         <th>Roles</th>
                         <th>Status</th>
-                        <th>
-                            <div>Updated</div>
-                            <div>Joined</div>
-                        </th>
-                        @can('admin')
-                            <th>Delete</th>
-                        @endcan
+                        <th>Last Seen</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tfoot class="border-top">
@@ -130,13 +127,8 @@
                         </th>
                         <th>Roles</th>
                         <th>Status</th>
-                        <th>
-                            <div>Updated</div>
-                            <div>Joined</div>
-                        </th>
-                        @can('admin')
-                            <th>Delete</th>
-                        @endcan
+                        <th>Last Seen</th>
+                        <th>Action</th>
                     </tr>
                     </tfoot>
                     <tbody>
@@ -157,7 +149,7 @@
 
                                     <div class="modal fade" id="{{ $user->id }}_UserRoleModal" tabindex="-1" role="dialog" aria-labelledby="{{ $user->id }}_UserRoleModalLabel"
                                          aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-scrollable" role="document">
+                                        <div class="modal-dialog modal-dialog-scrollable h-auto" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title" id="{{ $user->id }}_UserRoleModalLabel">
@@ -184,6 +176,7 @@
                                                                                    id="{{ $user->id }}_{{ $role->ability }}"
                                                                                    name="role[]"
                                                                                    value="{{ $role->id, $user->id }}"
+                                                                                {{ $role->id === 1 ? 'disabled' : '' }}
                                                                                 {{ in_array($role->id, $user->roles()->pluck('id')->toArray()) ? 'checked' : '' }}
                                                                             />
                                                                             <label class="form-check-label" for="{{ $user->id }}_{{ $role->ability }}">{{ $role->name }}</label>
@@ -205,23 +198,23 @@
                                 @endcan
                             </td>
                             <td>
-                                @if($user->email_verified_at)
-                                    <span class="badge text-bg-success">Verified</span>
+                                @if(Cache::has('user-is-online-' . $user->id))
+                                    <span class="small fw-bolder text-success">Online</span>
                                 @else
-                                    <span class="badge text-bg-warning">Pending</span>
+                                    <span class="small fw-bolder text-secondary">Offline</span>
                                 @endif
                             </td>
                             <td>
-                                <div class="small fw-bolder">{{ date_format($user->updated_at, 'Y-m-d H:i:s') }}</div>
-                                <div class="small fw-bolder">{{ date_format($user->created_at, 'Y-m-d H:i:s') }}</div>
+                                <div class="small fw-bolder">{{ $user->last_seen ? $user->last_seen->diffForHumans() : '' }}</div>
                             </td>
                             <td>
-                                @can('admin')
+                                @if(auth()->id() === $user->id)
+                                @elsecan('admin')
                                     <a class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#{{ $user->id }}_UserDeleteModal">Delete</a>
 
                                     <div class="modal fade" id="{{ $user->id }}_UserDeleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ $user->id }}_UserDeleteModalLabel"
                                          aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-scrollable" role="document">
+                                        <div class="modal-dialog modal-dialog-scrollable h-auto" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title" id="{{ $user->id }}_UserDeleteModalLabel">
@@ -232,13 +225,21 @@
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <div class="h6">
-                                                        Are you sure delete <b>{{ $user->name }}</b>?
-                                                    </div>
                                                     <form action="{{ route('admin.users.destroy') }}" method="POST" id="{{ $user->id }}_UserDeleteForm">
                                                         @method('DELETE')
                                                         @csrf
                                                         @honeypot
+
+                                                        <div class="h6 d-inline-flex">
+                                                            <span style="margin-top: .4rem;">Are you sure delete</span>
+                                                            <select name="block_type" class="fw-bolder bg-light-subtle form-control form-control-sm @error('block_type') is-invalid @enderror w-auto mx-2">
+                                                                @foreach(['temporary', 'forever'] as $val)
+                                                                    <option value="{{ $val }}" {{ $loop->first ? 'selected' : '' }}><span class="text-decoration-underline fw-bold">{{ $val }}</span></option>
+                                                                @endforeach
+                                                            </select>
+                                                            <span style="margin-top: .4rem;">{{ $user->name }}?</span>
+                                                        </div>
+
                                                         <input type="hidden" name="user_id" value="{{ $user->id }}">
                                                     </form>
 
@@ -250,7 +251,17 @@
                                             </div>
                                         </div>
                                     </div>
-                                @endcan
+                                @endif
+                                @if(auth()->id() !== $user->id)
+                                    @can('admin','user_manager')
+                                        <a class="btn btn-sm btn-outline-danger" onclick="$('#{{ $user->id }}_UserDisableForm').submit();">Disable</a>
+                                        <form action="{{ route('admin.users.disable', $user->id) }}" method="POST" id="{{ $user->id }}_UserDisableForm">
+                                            @csrf
+                                            @method('POST')
+                                            @honeypot
+                                        </form>
+                                    @endcan
+                                @endif
                             </td>
                         </tr>
                     @empty

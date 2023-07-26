@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Blacklist;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
@@ -16,6 +17,9 @@ use Illuminate\Support\Str;
 class HomeController extends Controller
 {
     public function index(Request $request) {
+        return User::all();
+
+
 //        DB::table('password_reset_tokens')
 //            ->updateOrInsert(
 //                ['email' => 'tazesalgy@gmail.com'],
@@ -37,8 +41,5 @@ class HomeController extends Controller
 //        if ($request->user()->cannot('admin')){
 //            abort(403);
 //    }
-        $rUser = $request->user();
-return $rUser->roles()->first();
-//    $blockedBy = ($rUser->has('roles') ? $rUser->roles()->first() : '') . ', Administrator';
-}
+    }
 }

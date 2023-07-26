@@ -15,7 +15,7 @@ class UserController extends Controller
 {
     public function index(): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
     {
-        $users = User::with('roles')->orderBy('id')->get();
+        $users = User::where('disabled', false)->with('roles')->orderBy('id')->get();
         $roles = Role::orderBy('id')->get(['id', 'name', 'ability']);
 
         $data = [
@@ -35,6 +35,10 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
+
+        if (Blacklist::where('email', $validation['email'])->exists()) {
+            return back()->with('error', 'User registration blocked!');
+        }
 
         try {
             User::create($validation)->sendUserCreatedNotification($validation['email'], $validation['password']);
@@ -63,6 +67,10 @@ class UserController extends Controller
 
     public function destroy(Request $request): \Illuminate\Http\RedirectResponse
     {
+        $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'block_type' => ['in:temporary,forever'],
+        ]);
         try {
             $user = User::where('id', $request->user_id)->first();
             $rUser = auth()->user();
@@ -74,7 +82,7 @@ class UserController extends Controller
 //                $i = 0;
 //                do {
 //                    $i++;
-                $this->addToBlacklist(user: $email, blockedBy: $blockedBy);
+                $this->addToBlacklist(user: $email, blockedBy: $blockedBy, blockType: $request->block_type);
                 Mail::to($email)->send(new UserDeleted('admin', $blockedBy));
 //                } while ($i < 4);
             } catch (\Exception $e) {
@@ -85,6 +93,18 @@ class UserController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
+
+    public function disable($id): \Illuminate\Http\RedirectResponse
+    {
+        try {
+            User::where('id', $id)->first()->update(['disabled' => true]);
+            return redirect()->back()->with('success', 'User disabled!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
 
     public function addToBlacklist($user, $blockedBy, $blockType = 'temporary', $status = 1, $authType = 'admin') {
         try {

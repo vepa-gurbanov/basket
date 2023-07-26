@@ -71,8 +71,8 @@ Route::prefix('admin')
             Route::controller(UserController::class)->group(function () {
                 Route::get('users', 'index')->name('.users');
                 Route::put('users', 'updateRole')->name('.users.role.update')->middleware('can:admin');
-                Route::patch('users', 'update')->name('.users.update')->middleware('can:admin');
                 Route::delete('users', 'destroy')->name('.users.destroy')->middleware('can:admin');
+                Route::post('users/{id}', 'disable')->name('.users.disable')->middleware('can:admin,user_manager')->where('id', '[0-9]+');
                 Route::post('users', 'store')->name('.users.store')->middleware('can:admin');
             });
         });

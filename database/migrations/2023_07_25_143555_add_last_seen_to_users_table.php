@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('disabled')->default(0)->after('remember_token');
+            $table->timestamp('last_seen')->nullable()->after('disabled');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('disabled');
+            $table->dropColumn('last_seen');
         });
     }
 };
