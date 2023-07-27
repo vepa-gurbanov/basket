@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Mockery\Exception;
+use function PHPUnit\Framework\isFalse;
 
 class UserController extends Controller
 {
@@ -40,12 +41,20 @@ class UserController extends Controller
             return back()->with('error', 'User registration blocked!');
         }
 
-        try {
-            User::create($validation)->sendUserCreatedNotification($validation['email'], $validation['password']);
-            return redirect()->back()->with('success', 'User created!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        }
+        $i = 0;
+        do {
+            try {
+                $i++;
+                User::create($validation)->sendUserCreatedNotification($validation['email'], $validation['password']);
+                return redirect()->back()->with('success', 'User created!' . ' Counted: ' . $i);
+            } catch (\Exception $e) {
+                if ($i < 3) {
+                    continue;
+                }
+                $e = $e->getMessage();
+            }
+        } while ($i < 3);
+        return redirect()->back()->with('error', $e . ' Counted: ' . $i);
     }
 
 
@@ -78,16 +87,18 @@ class UserController extends Controller
             $user->delete();
             $blockedBy = ($rUser->has('roles') ? $rUser->roles()->first()->name . ', ' : '') . 'Administrator';
 
-            try {
-//                $i = 0;
-//                do {
-//                    $i++;
-                $this->addToBlacklist(user: $email, blockedBy: $blockedBy, blockType: $request->block_type);
-                Mail::to($email)->send(new UserDeleted('admin', $blockedBy));
-//                } while ($i < 4);
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage());
-            }
+            $i = 0;
+            do {
+                try {
+                    $i++;
+                    $this->addToBlacklist(user: $email, blockedBy: $blockedBy, blockType: $request->block_type);
+                    Mail::to($email)->send(new UserDeleted('admin', $blockedBy));
+                } catch (\Exception $e) {
+                    if($i < 3) continue;
+                    return redirect()->back()->with('error', $e->getMessage());
+                }
+            } while ($i < 3);
+
             return to_route('admin.users')->with('success', 'User was deleted and mailed!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -106,7 +117,8 @@ class UserController extends Controller
     }
 
 
-    public function addToBlacklist($user, $blockedBy, $blockType = 'temporary', $status = 1, $authType = 'admin') {
+    public function addToBlacklist($user, $blockedBy, $blockType = 'temporary', $status = 1, $authType = 'admin'): bool
+    {
         try {
             Blacklist::updateOrCreate(
                 ['email' => $user],

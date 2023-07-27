@@ -4,11 +4,17 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">{{ $title }}</h1>
+        <h6 class="m-0 font-weight-bold text-primary">
+            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
+            </a>
+        </h6>
+
     </div>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between">
-            <div class="cola">
+            <div class="col-auto">
                 <h6 class="m-0 font-weight-bold text-primary">
                     <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                         <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
@@ -107,6 +113,12 @@
                 <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
                     <thead class="border-bottom">
                     <tr>
+                        <th>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" value="" id="UsersCheckAll">
+                                <label for="UsersCheckAll">All</label>
+                            </div>
+                        </th>
                         <th>ID</th>
                         <th>
                             <div>Name</div>
@@ -120,6 +132,8 @@
                     </thead>
                     <tfoot class="border-top">
                     <tr>
+
+                        <th></th>
                         <th>ID</th>
                         <th>
                             <div>Name</div>
@@ -133,7 +147,14 @@
                     </tfoot>
                     <tbody>
                     @forelse($users as $user)
-                        <tr class="{{ ! $loop->last ?? 'border-bottom' }}">
+                        <tr class="{{ $loop->last ? '' : 'border-bottom' }}">
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="user_ids" value="" id="{{ $user->id }}">
+                                </div>
+                                <div>
+                                </div>
+                            </td>
                             <td>{{ $user->id }}</td>
                             <td>
                                 <div class=" fw-bolder">{{ $user->name }}</div>
