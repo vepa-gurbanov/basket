@@ -44,7 +44,7 @@ function selectedUsers() {
     let usersCached = [];
     let checkAllBtn = $('input:checkbox#UsersCheckAll');
     let userInput = $('input:checkbox[name=user_ids]');
-    checkAllBtn.on('change', function () {
+    checkAllBtn.on('click', function () {
         if ($(this).prop('checked')) {
             userInput.prop('checked', true);
             users = [];
@@ -59,7 +59,7 @@ function selectedUsers() {
         console.log('User IDs: ' + users);
     })
 
-    userInput.on('change', function() {
+    userInput.on('click', function() {
         let user = $(this);
         if (users.includes(user.attr('id'))) {
             users.splice(users.indexOf(user.attr('id')), 1);
@@ -67,11 +67,18 @@ function selectedUsers() {
             users.push(user.attr('id'));
         }
 
+        let cache = [];
         users.every(function (element, index) {
             if (!$.inArray(element, usersCached)) {
+                cache.push(0);
+            } else {
+                cache.push(1);
+            }
+            if ($.inArray(1, cache) && cache.length === usersCached.length) {
+                checkAllBtn.prop('checked', true);
+            } else {
                 checkAllBtn.prop('checked', false);
             }
-            checkAllBtn.prop('checked', true);
         });
 
         console.log('User IDs: ' + users);
